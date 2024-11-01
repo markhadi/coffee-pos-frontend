@@ -103,11 +103,6 @@ export default function LoginForm() {
     },
   });
 
-  const handleLogin = async (timeoutId: NodeJS.Timeout, slowConnectionTimer: NodeJS.Timeout) => {
-    clearTimeout(timeoutId);
-    clearTimeout(slowConnectionTimer);
-  };
-
   const onSubmit: SubmitHandler<LoginSchema> = async data => {
     let timeoutId: NodeJS.Timeout | undefined;
     let slowConnectionTimer: NodeJS.Timeout | undefined;

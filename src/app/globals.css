@@ -77,3 +77,8 @@ body {
   min-height: 100svh;
   color: #171717;
 }
+
+h1 {
+  font-size: 32px;
+  font-weight: bold;
+}
