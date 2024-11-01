@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginSchema, UserRole, DecodedToken } from '@/types/auth';
 import { authService, AuthError } from '@/services/auth.service';
+import { tokenService } from '@/services/token.service';
 
 /**
  * Route mapping for different user roles
- * Defines which route each role should be redirected to after login
  */
 const ROLE_ROUTES = {
   [UserRole.ADMIN]: '/admin',
@@ -22,18 +22,7 @@ export const useAuth = () => {
   const router = useRouter();
 
   /**
-   * Setup authentication interceptors when component mounts
-   * This ensures token refresh and request handling are properly setup
-   */
-  useEffect(() => {
-    authService.setupInterceptors();
-  }, []);
-
-  /**
    * Determines the correct route based on user's role
-   * @param decodedToken - Decoded JWT token containing user information
-   * @returns The route path for the user's role
-   * @throws Error if role is invalid
    */
   const handleRouteByRole = (decodedToken: DecodedToken): string => {
     const route = ROLE_ROUTES[decodedToken.role];
@@ -46,40 +35,27 @@ export const useAuth = () => {
 
   /**
    * Handles the login process
-   * - Validates credentials
-   * - Stores authentication data
-   * - Redirects to appropriate route based on role
-   *
-   * @param credentials - User login credentials
-   * @returns Promise<LoginResponse>
    */
   const login = async (credentials: LoginSchema) => {
     try {
       setIsLoading(true);
       setError('');
 
-      // Attempt login
       const response = await authService.login(credentials);
       const token = response.data;
-      const decodedToken = authService.decodeToken(token);
-
-      // Store authentication data
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(decodedToken));
+      const decodedToken = tokenService.decodeToken(token);
 
       // Handle routing
       const route = handleRouteByRole(decodedToken);
       router.push(route);
 
       return response;
-    } catch (error: unknown) {
-      // Handle different types of errors
+    } catch (error) {
       if (error instanceof AuthError) {
         setError(error.message);
       } else {
         setError('Connection error. Please check your internet connection and try again.');
       }
-
       throw error;
     } finally {
       setIsLoading(false);
@@ -88,7 +64,6 @@ export const useAuth = () => {
 
   /**
    * Handles user logout
-   * Delegates to authService for logout process
    */
   const logout = () => {
     authService.logout();
