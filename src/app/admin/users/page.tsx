@@ -1,8 +1,8 @@
 'use client';
 
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import MainLayout from '@/components/MainLayout';
 import { SearchBar } from '@/components/SearchBar';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { UserFormDialog } from '@/components/users/UserFormDialog';
 import { UsersTable } from '@/components/users/UsersTable';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -159,24 +159,13 @@ const page = () => {
         />
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog
+        <DeleteConfirmationDialog
           open={deleteDialog.open}
           onOpenChange={open => setDeleteDialog(prev => ({ ...prev, open }))}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the user
-                {deleteDialog.user?.name && ` "${deleteDialog.user.name}"`}.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          onConfirm={handleDeleteConfirm}
+          itemName={deleteDialog.user?.name || ''}
+          itemType="user"
+        />
       </div>
     </MainLayout>
   );

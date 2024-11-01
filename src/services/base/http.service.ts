@@ -118,14 +118,17 @@ export const createHttpClient = (baseURL: string) => {
     try {
       const response = await axiosInstance(config);
 
-      // Handle endpoint-specific response formats
+      // Handle different response formats based on endpoint
       if (config.url?.includes('login')) {
         return response.data;
-      } else if (config.url?.includes('users') && config.method === 'GET') {
+      } else if ((config.url?.includes('users') || config.url?.includes('categories')) && config.method === 'GET') {
+        // Return full response for GET requests to users and categories
         return response.data;
       } else if (config.method === 'POST' || config.method === 'PUT' || config.method === 'DELETE') {
+        // For mutations, return the data property
         return response.data.data;
       } else {
+        // Default fallback
         return response.data.data || response.data;
       }
     } catch (error) {
