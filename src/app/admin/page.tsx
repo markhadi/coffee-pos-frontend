@@ -1,11 +1,7 @@
-import MainLayout from '@/components/MainLayout';
+import DashboardPage from '@/components/dashboard/dashboard';
 
-const AdminPage = () => {
-  return (
-    <MainLayout>
-      <div>Dashboard</div>
-    </MainLayout>
-  );
+const page = () => {
+  return <DashboardPage />;
 };
 
-export default AdminPage;
+export default page;

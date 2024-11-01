@@ -1,7 +1,7 @@
-import MainLayout from '@/components/MainLayout';
+import TransactionsPage from '@/components/transactions/transactions';
 
 const page = () => {
-  return <MainLayout>Transactions</MainLayout>;
+  return <TransactionsPage />;
 };
 
 export default page;

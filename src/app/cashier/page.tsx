@@ -1,11 +1,7 @@
-import MainLayout from '@/components/MainLayout';
+import DashboardPage from '@/components/dashboard/dashboard';
 
-const CashierPage = () => {
-  return (
-    <MainLayout>
-      <h1 className="text-2xl font-bold">Cashier Dashboard</h1>
-    </MainLayout>
-  );
+const page = () => {
+  return <DashboardPage />;
 };
 
-export default CashierPage;
+export default page;

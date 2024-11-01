@@ -30,13 +30,13 @@ export function CartItemComponent({ item, onIncrease, onDecrease }: CartItemComp
       {/* Product Info */}
       <div className="flex flex-col">
         <span className="text-[16px] font-medium text-neutral-900">{item.name}</span>
-        <span className="text-sm text-neutral-500">{formatCurrency(item.price)} each</span>
+        <span className="text-sm text-neutral-500">{formatCurrency(item.price)}</span>
       </div>
 
       {/* Quantity Controls and Total */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center">
         {/* Quantity Controls */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <button
             onClick={() => onDecrease(item.id)}
             className="w-6 h-6 flex items-center justify-center bg-indigo-600 rounded hover:bg-indigo-700 transition-colors"
@@ -57,7 +57,7 @@ export function CartItemComponent({ item, onIncrease, onDecrease }: CartItemComp
         </div>
 
         {/* Total Price */}
-        <span className="text-[16px] font-bold text-indigo-600 min-w-[80px] text-right">{formatCurrency(item.price * item.quantity)}</span>
+        <span className="text-[16px] font-bold text-indigo-600 min-w-[72px] text-right">{formatCurrency(item.price * item.quantity)}</span>
       </div>
     </div>
   );
