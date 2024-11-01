@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginSchema, UserRole, DecodedToken } from '@/types/auth';
 import { authService, AuthError } from '@/services/auth.service';

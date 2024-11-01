@@ -1,0 +1,43 @@
+.table-container {
+  @apply h-[550px] overflow-auto relative rounded-lg border border-slate-200 shadow-md;
+}
+
+.users-table {
+  @apply w-full border-collapse bg-white text-left text-slate-700;
+}
+
+.header-row {
+  @apply grid grid-flow-col w-full;
+}
+
+.header-cell {
+  @apply px-4 py-4 font-semibold text-neutral-900 whitespace-nowrap;
+}
+
+.table-body {
+  @apply divide-y divide-slate-200 border-t border-slate-200 w-full relative;
+}
+
+.table-row {
+  @apply hover:bg-slate-50 absolute w-full grid grid-flow-col transition-colors;
+}
+
+.table-cell {
+  @apply px-4 py-2 flex items-center whitespace-nowrap overflow-hidden;
+}
+
+.btn-edit {
+  @apply rounded-md bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white 
+         hover:bg-cyan-600 transition-colors focus:outline-none 
+         focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2;
+}
+
+.btn-delete {
+  @apply rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white 
+         hover:bg-rose-600 transition-colors focus:outline-none 
+         focus:ring-2 focus:ring-rose-400 focus:ring-offset-2;
+}
+
+.loading-indicator {
+  @apply text-center py-4 text-slate-600 bg-slate-50 border-t border-slate-200;
+}

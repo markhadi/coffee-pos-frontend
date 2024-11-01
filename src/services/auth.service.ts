@@ -8,26 +8,13 @@ import { ApiError } from '@/types/api';
  * @returns Authentication service methods
  */
 const createAuthService = () => {
-  const { axiosInstance, request } = createBaseService();
+  const { request, axiosInstance } = createBaseService();
 
   /**
    * Sets up axios interceptors for request/response handling
    * Manages authentication headers and token refresh
    */
-  const setupInterceptors = () => {
-    // Add token to all requests
-    axiosInstance.interceptors.request.use(
-      async config => {
-        const token = tokenService.getToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      error => Promise.reject(error)
-    );
-
-    // Handle 401 responses and token refresh
+  const setupRefreshInterceptor = () => {
     axiosInstance.interceptors.response.use(
       response => response,
       async error => {
@@ -40,7 +27,7 @@ const createAuthService = () => {
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return axiosInstance(originalRequest);
           } catch (refreshError) {
-            logout();
+            await logout();
             throw refreshError;
           }
         }
@@ -127,7 +114,7 @@ const createAuthService = () => {
   };
 
   // Initialize interceptors
-  setupInterceptors();
+  setupRefreshInterceptor();
 
   return {
     login,
