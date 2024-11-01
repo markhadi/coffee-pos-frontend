@@ -121,11 +121,12 @@ export const createHttpClient = (baseURL: string) => {
       // Handle different response formats based on endpoint
       if (config.url?.includes('login')) {
         return response.data;
-      } else if ((config.url?.includes('users') || config.url?.includes('categories') || config.url?.includes('payments')) && config.method === 'GET') {
-        // Return full response for GET requests to users, categories, and payments
-        return response.data;
-      } else if (config.method === 'POST' || config.method === 'PUT' || config.method === 'DELETE') {
-        // For mutations, return the data property
+      } else if (config.url?.includes('users') || config.url?.includes('categories') || config.url?.includes('payments') || config.url?.includes('products')) {
+        // Return full response for GET requests to these endpoints
+        if (config.method === 'GET') {
+          return response.data;
+        }
+        // For mutations (POST/PUT/DELETE), return the data property
         return response.data.data;
       } else {
         // Default fallback
