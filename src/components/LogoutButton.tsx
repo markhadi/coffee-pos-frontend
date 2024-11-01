@@ -12,9 +12,12 @@ export default function LogoutButton() {
       onClick={logout}
       disabled={isLoading}
       variant="destructive"
-      className="flex items-center gap-2"
+      className="flex items-center gap-2 h-max text-[16px] font-bold"
     >
-      <LogOut className="h-4 w-4" />
+      <LogOut
+        strokeWidth={4}
+        className="h-4 w-4"
+      />
       {isLoading ? 'Logging out...' : 'Logout'}
     </Button>
   );

@@ -1,11 +1,11 @@
 import MainLayout from '@/components/MainLayout';
 
-const AdminPage = () => {
+const page = () => {
   return (
     <MainLayout>
-      <div>Dashboard</div>
+      <div>Categories</div>
     </MainLayout>
   );
 };
 
-export default AdminPage;
+export default page;

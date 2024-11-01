@@ -1,15 +1,10 @@
-'use client';
-
-import LogoutButton from '@/components/LogoutButton';
+import MainLayout from '@/components/MainLayout';
 
 const CashierPage = () => {
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Cashier Dashboard</h1>
-        <LogoutButton />
-      </div>
-    </div>
+    <MainLayout>
+      <h1 className="text-2xl font-bold">Cashier Dashboard</h1>
+    </MainLayout>
   );
 };
 
