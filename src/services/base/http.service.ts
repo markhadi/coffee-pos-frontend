@@ -121,7 +121,7 @@ export const createHttpClient = (baseURL: string) => {
       // Handle different response formats based on endpoint
       if (config.url?.includes('login')) {
         return response.data;
-      } else if (config.url?.includes('users') || config.url?.includes('categories') || config.url?.includes('payments') || config.url?.includes('products')) {
+      } else if (config.url?.includes('users') || config.url?.includes('categories') || config.url?.includes('payments') || config.url?.includes('products') || config.url?.includes('transactions')) {
         // Return full response for GET requests to these endpoints
         if (config.method === 'GET') {
           return response.data;

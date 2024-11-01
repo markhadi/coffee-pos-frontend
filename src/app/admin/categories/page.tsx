@@ -128,8 +128,11 @@ export default function CategoriesPage() {
             onClick={handleCreate}
             className="bg-indigo-600 hover:bg-indigo-700"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Category
+            <Plus
+              strokeWidth={4}
+              className="w-4 h-4 text-white md:mr-2"
+            />
+            <span className="hidden md:block">Add New Category</span>
           </Button>
         </div>
 

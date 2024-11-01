@@ -134,8 +134,11 @@ export default function PaymentMethodsPage() {
             onClick={handleCreate}
             className="bg-indigo-600 hover:bg-indigo-700"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Payment Method
+            <Plus
+              strokeWidth={4}
+              className="w-4 h-4 text-white md:mr-2"
+            />
+            <span className="hidden md:block">Add New Payment Method</span>
           </Button>
         </div>
 
