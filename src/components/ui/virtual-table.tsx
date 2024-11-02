@@ -46,8 +46,9 @@ export function VirtualTable<T>({ data, columns, height = 550, entityName, meta,
   return (
     <div
       ref={tableContainerRef}
-      className={`h-[${height}px] overflow-auto relative rounded-lg border border-slate-200 shadow-md`}
+      className="overflow-auto relative rounded-lg border border-slate-200 shadow-md hh-full"
       onScroll={e => handleScroll(e.target as HTMLDivElement)}
+      style={{ maxHeight: `${height}px` }}
     >
       <table className="w-full border-collapse bg-white text-left text-slate-700">
         <thead className="bg-slate-100 z-10 sticky top-0 shadow-sm w-full">

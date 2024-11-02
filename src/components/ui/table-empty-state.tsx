@@ -1,7 +1,7 @@
 interface TableEmptyStateProps {
-  height?: number;
-  isFetching: boolean;
+  height: number;
   entityName: string;
+  isFetching?: boolean;
 }
 
 /**
@@ -11,14 +11,17 @@ interface TableEmptyStateProps {
  * ```tsx
  * <TableEmptyState
  *   height={550}
- *   isFetching={isFetching}
  *   entityName="products"
+ *   isFetching={isFetching}
  * />
  * ```
  */
-export function TableEmptyState({ height = 550, isFetching, entityName }: TableEmptyStateProps) {
+export function TableEmptyState({ height, entityName, isFetching = false }: TableEmptyStateProps) {
   return (
-    <div className={`h-[${height}px] flex items-center justify-center border border-slate-200 rounded-lg`}>
+    <div
+      style={{ height: `${height}px` }}
+      className="flex items-center justify-center border border-slate-200 rounded-lg"
+    >
       <div className="text-center text-slate-500">{isFetching ? `Loading ${entityName}...` : `No ${entityName} found`}</div>
     </div>
   );
