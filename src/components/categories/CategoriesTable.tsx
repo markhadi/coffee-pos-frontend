@@ -3,6 +3,7 @@ import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '
 import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { CategoryResponse } from '@/types/category';
 import { ActionButtons } from '@/components/ui/action-button';
+import { useTableScroll } from '@/hooks/useTableScroll';
 
 const columnHelper = createColumnHelper<CategoryResponse>();
 
@@ -55,25 +56,11 @@ const createTableColumns = (meta: TableCustomMeta) => [
 ];
 
 export function CategoriesTable({ data = [], onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: CategoriesTableProps) {
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(
-    (containerRefElement?: HTMLDivElement | null) => {
-      if (!containerRefElement) return;
-
-      const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 500;
-
-      if (isNearBottom && !isFetching && hasNextPage) {
-        fetchNextPage();
-      }
-    },
-    [fetchNextPage, isFetching, hasNextPage]
-  );
-
-  useEffect(() => {
-    handleScroll(tableContainerRef.current);
-  }, [handleScroll]);
+  const { tableContainerRef, handleScroll } = useTableScroll({
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
+  });
 
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 

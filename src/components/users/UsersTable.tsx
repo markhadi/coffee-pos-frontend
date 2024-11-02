@@ -4,6 +4,7 @@ import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { UserResponse } from '@/types/user';
 import { formatDate } from '@/lib/utils';
 import { ActionButtons } from '@/components/ui/action-button';
+import { useTableScroll } from '@/hooks/useTableScroll';
 
 const columnHelper = createColumnHelper<UserResponse>();
 
@@ -21,26 +22,55 @@ interface UsersTableProps {
   hasNextPage: boolean;
 }
 
+const createTableColumns = (meta: TableCustomMeta) => [
+  columnHelper.display({
+    id: 'index',
+    header: 'No',
+    size: 70,
+    cell: props => props.row.index + 1,
+  }),
+  columnHelper.accessor('username', {
+    header: 'Username',
+    size: 150,
+  }),
+  columnHelper.accessor('name', {
+    header: 'Name',
+    size: 200,
+  }),
+  columnHelper.accessor('role', {
+    header: 'Role',
+    size: 100,
+  }),
+  columnHelper.accessor('created_at', {
+    header: 'Created At',
+    size: 200,
+    cell: info => formatDate(info.getValue()),
+  }),
+  columnHelper.accessor('updated_at', {
+    header: 'Updated At',
+    size: 200,
+    cell: info => formatDate(info.getValue()),
+  }),
+  columnHelper.display({
+    id: 'actions',
+    header: 'Actions',
+    size: 150,
+    cell: props => (
+      <ActionButtons
+        onEdit={meta.onEdit}
+        onDelete={meta.onDelete}
+        item={props.row.original}
+      />
+    ),
+  }),
+];
+
 export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: UsersTableProps) {
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(
-    (containerRefElement?: HTMLDivElement | null) => {
-      if (!containerRefElement) return;
-
-      const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 500;
-
-      if (isNearBottom && !isFetching && hasNextPage) {
-        fetchNextPage();
-      }
-    },
-    [fetchNextPage, isFetching, hasNextPage]
-  );
-
-  useEffect(() => {
-    handleScroll(tableContainerRef.current);
-  }, [handleScroll]);
+  const { tableContainerRef, handleScroll } = useTableScroll({
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
+  });
 
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
@@ -61,6 +91,15 @@ export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, 
   });
 
   const virtualRows = rowVirtualizer.getVirtualItems();
+
+  // Show empty state if no data
+  if (!data.length) {
+    return (
+      <div className="h-[550px] flex items-center justify-center border border-slate-200 rounded-lg">
+        <div className="text-center text-slate-500">{isFetching ? 'Loading users...' : 'No users found'}</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -120,46 +159,3 @@ export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, 
     </div>
   );
 }
-
-const createTableColumns = (meta: TableCustomMeta) => [
-  columnHelper.display({
-    id: 'index',
-    header: 'No',
-    size: 70,
-    cell: props => props.row.index + 1,
-  }),
-  columnHelper.accessor('username', {
-    header: 'Username',
-    size: 150,
-  }),
-  columnHelper.accessor('name', {
-    header: 'Name',
-    size: 200,
-  }),
-  columnHelper.accessor('role', {
-    header: 'Role',
-    size: 100,
-  }),
-  columnHelper.accessor('created_at', {
-    header: 'Created At',
-    size: 200,
-    cell: info => formatDate(info.getValue()),
-  }),
-  columnHelper.accessor('updated_at', {
-    header: 'Updated At',
-    size: 200,
-    cell: info => formatDate(info.getValue()),
-  }),
-  columnHelper.display({
-    id: 'actions',
-    header: 'Actions',
-    size: 150,
-    cell: props => (
-      <ActionButtons
-        onEdit={meta.onEdit}
-        onDelete={meta.onDelete}
-        item={props.row.original}
-      />
-    ),
-  }),
-];
