@@ -4,6 +4,7 @@ import { ActionButtons } from '@/components/ui/action-button';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { useVirtualTable, createColumnHelper } from '@/hooks/useVirtualTable';
 import { flexRender } from '@tanstack/react-table';
+import { TableEmptyState } from '@/components/ui/table-empty-state';
 
 const columnHelper = createColumnHelper<CategoryResponse>();
 
@@ -74,9 +75,11 @@ export function CategoriesTable({ data = [], onEdit, onDelete, fetchNextPage, is
   // Show empty state if no data
   if (!data.length) {
     return (
-      <div className="h-[300px] flex items-center justify-center border border-slate-200 rounded-lg">
-        <div className="text-center text-slate-500">{isFetching ? 'Loading categories...' : 'No categories found'}</div>
-      </div>
+      <TableEmptyState
+        height={300}
+        isFetching={isFetching}
+        entityName="categories"
+      />
     );
   }
 

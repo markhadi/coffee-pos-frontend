@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils';
 import { ActionButtons } from '@/components/ui/action-button';
 import { useTableScroll } from '@/hooks/useTableScroll';
 import { flexRender } from '@tanstack/react-table';
+import { TableEmptyState } from '@/components/ui/table-empty-state';
 
 const columnHelper = createColumnHelper<UserResponse>();
 
@@ -84,9 +85,10 @@ export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, 
   // Show empty state if no data
   if (!data.length) {
     return (
-      <div className="h-[550px] flex items-center justify-center border border-slate-200 rounded-lg">
-        <div className="text-center text-slate-500">{isFetching ? 'Loading users...' : 'No users found'}</div>
-      </div>
+      <TableEmptyState
+        isFetching={isFetching}
+        entityName="users"
+      />
     );
   }
 
