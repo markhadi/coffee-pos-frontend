@@ -34,7 +34,6 @@ const isTokenValid = (token: string): { isValid: boolean; decoded?: DecodedToken
     const decoded = jwtDecode(token) as DecodedToken;
     const currentTime = Math.floor(Date.now() / 1000);
 
-    // Check if token is expired
     if (decoded.exp < currentTime) {
       return { isValid: false };
     }
@@ -65,19 +64,22 @@ const hasAccess = (role: UserRole, pathname: string): boolean => {
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get('token')?.value;
 
-  // Handle public routes (including root path)
+  // Get refresh_token from cookies for server-side auth
+  const refreshToken = request.cookies.get('refresh_token')?.value;
+
+  // Handle public routes
   if (publicRoutes.includes(pathname)) {
-    // If user is authenticated, redirect to their dashboard
-    if (token) {
-      const { isValid, decoded } = isTokenValid(token);
+    if (refreshToken) {
+      // Use refresh token to check authentication status
+      const { isValid, decoded } = isTokenValid(refreshToken);
       if (isValid && decoded) {
         const redirectUrl = roleRoutes[decoded.role][0];
+
         return NextResponse.redirect(new URL(redirectUrl, request.url));
       }
     }
-    // If not authenticated and trying to access root, redirect to login
+
     if (pathname === '/') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -86,17 +88,20 @@ export async function middleware(request: NextRequest) {
 
   // Handle protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    if (!token) {
+    if (!refreshToken) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const { isValid, decoded } = isTokenValid(token);
+    // Validate refresh token for protected routes
+    const { isValid, decoded } = isTokenValid(refreshToken);
     if (!isValid || !decoded) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
+    // Check role-based access
     if (!hasAccess(decoded.role, pathname)) {
       const redirectUrl = roleRoutes[decoded.role][0];
+
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
   }

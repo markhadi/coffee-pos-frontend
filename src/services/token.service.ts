@@ -4,7 +4,7 @@ import { DecodedToken } from '@/types/auth';
 /**
  * Constants for token management
  */
-const TOKEN_KEY = 'token';
+const ACCESS_TOKEN_KEY = 'accessToken';
 const USER_KEY = 'user';
 const EXPIRY_THRESHOLD = 60; // seconds before expiry to consider token as expiring
 
@@ -18,7 +18,7 @@ export const tokenService = {
    * @returns Stored token or null if not found
    */
   getToken: (): string | null => {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
   },
 
   /**
@@ -26,7 +26,7 @@ export const tokenService = {
    * @param token - JWT token string
    */
   setToken: (token: string): void => {
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
     const decoded = tokenService.decodeToken(token);
     localStorage.setItem(USER_KEY, JSON.stringify(decoded));
   },
@@ -35,7 +35,7 @@ export const tokenService = {
    * Removes token and user data from local storage
    */
   clearToken: (): void => {
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
   },
 
@@ -48,7 +48,7 @@ export const tokenService = {
   decodeToken: (token: string): DecodedToken => {
     try {
       return jwtDecode(token) as DecodedToken;
-    } catch {
+    } catch (error) {
       throw new Error('Invalid token format');
     }
   },
@@ -64,6 +64,7 @@ export const tokenService = {
     try {
       const decoded = tokenService.decodeToken(token);
       const timeUntilExp = decoded.exp - Math.floor(Date.now() / 1000);
+
       return timeUntilExp <= EXPIRY_THRESHOLD;
     } catch {
       return true;

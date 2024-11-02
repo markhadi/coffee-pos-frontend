@@ -28,7 +28,10 @@ export const createHttpClient = (baseURL: string) => {
   const axiosInstance: AxiosInstance = axios.create({
     baseURL,
     withCredentials: true,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
     timeout: 10000,
   });
 
@@ -61,13 +64,6 @@ export const createHttpClient = (baseURL: string) => {
     } else {
       message = getErrorMessage(status);
     }
-
-    console.error('API Error Details:', {
-      status,
-      message,
-      data: error.response?.data,
-      config: error.config,
-    });
 
     throw new ApiError(message, status, error.response?.data);
   };

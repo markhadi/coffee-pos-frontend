@@ -1,40 +1,98 @@
-import { createBaseService } from './base/base.service';
+import { createHttpClient } from './base/http.service';
 import { tokenService } from './token.service';
 import { LoginSchema, LoginResponse } from '@/types/auth';
 import { ApiError } from '@/types/api';
+import { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 /**
- * Creates authentication service with login, logout, and token refresh functionality
- * @returns Authentication service methods
+ * Custom configuration interface for axios requests
+ * Extends the default axios config with custom properties
+ */
+interface CustomRequestConfig extends InternalAxiosRequestConfig {
+  skipRefreshToken?: boolean; // Flag to skip token refresh for certain requests
+  _retry?: boolean; // Flag to prevent infinite retry loops
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:2000/';
+
+/**
+ * Creates an authentication service with token refresh capabilities
+ * Handles login, logout, and automatic token refresh
  */
 const createAuthService = () => {
-  const { request, axiosInstance } = createBaseService();
+  const { axiosInstance, request } = createHttpClient(API_URL);
+  let isRefreshing = false; // Flag to prevent multiple simultaneous refresh requests
+  let failedQueue: Array<{
+    resolve: (token: string) => void;
+    reject: (error: any) => void;
+  }> = [];
 
   /**
-   * Sets up axios interceptors for request/response handling
-   * Manages authentication headers and token refresh
+   * Process queued requests after token refresh
+   * @param error - Error from token refresh attempt
+   * @param token - New token if refresh was successful
    */
-  const setupRefreshInterceptor = () => {
-    axiosInstance.interceptors.response.use(
-      response => response,
-      async error => {
-        const originalRequest = error.config;
+  const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(promise => {
+      if (error) {
+        promise.reject(error);
+      } else if (token) {
+        promise.resolve(token);
+      }
+    });
+    failedQueue = [];
+  };
 
-        if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('refresh')) {
-          originalRequest._retry = true;
-          try {
-            const newToken = await refreshToken();
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return axiosInstance(originalRequest);
-          } catch (refreshError) {
-            await logout();
-            throw refreshError;
-          }
-        }
+  /**
+   * Response interceptor to handle 401 errors and token refresh
+   * Automatically refreshes token and retries failed requests
+   */
+  axiosInstance.interceptors.response.use(
+    (response: AxiosResponse) => response,
+    async error => {
+      const originalRequest = error.config as CustomRequestConfig;
+
+      // Skip refresh for login/refresh requests
+      if (originalRequest.skipRefreshToken || originalRequest.url?.includes('refresh')) {
         return Promise.reject(error);
       }
-    );
-  };
+
+      // Handle 401 errors with token refresh
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        // Queue request if refresh is already in progress
+        if (isRefreshing) {
+          try {
+            const token = await new Promise<string>((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            });
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosInstance(originalRequest);
+          } catch (err) {
+            return Promise.reject(err);
+          }
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const newToken = await refreshToken();
+
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          processQueue(null, newToken);
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+
+          await logout();
+          throw refreshError;
+        } finally {
+          isRefreshing = false;
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
 
   /**
    * Authenticates user with credentials
@@ -46,34 +104,37 @@ const createAuthService = () => {
       method: 'POST',
       url: 'api/users/login',
       data: credentials,
-    });
+      skipRefreshToken: true,
+    } as CustomRequestConfig);
 
     if (response.data) {
       tokenService.setToken(response.data);
-      setCookie(response.data);
     }
 
     return response;
   };
 
   /**
-   * Refreshes authentication token
-   * @returns Promise resolving to new token
-   * @throws Error if refresh fails
+   * Refreshes access token using refresh token from cookie
+   * @returns Promise resolving to new access token
    */
   const refreshToken = async (): Promise<string> => {
-    const response = await request<LoginResponse>({
-      method: 'GET',
-      url: 'api/users/refresh',
-    });
+    try {
+      const response = await request<LoginResponse>({
+        method: 'GET',
+        url: 'api/users/refresh',
+        skipRefreshToken: true,
+      } as CustomRequestConfig);
 
-    if (response.data) {
-      tokenService.setToken(response.data);
-      setCookie(response.data);
-      return response.data;
+      if (response.data) {
+        tokenService.setToken(response.data);
+        return response.data;
+      }
+
+      throw new Error('Invalid refresh token response');
+    } catch (error) {
+      throw error;
     }
-
-    throw new Error('Invalid refresh token response');
   };
 
   /**
@@ -86,42 +147,30 @@ const createAuthService = () => {
       await request({
         method: 'DELETE',
         url: 'api/users/logout',
-      }).catch(() => {
-        /* Ignore logout errors */
+        skipRefreshToken: true,
+      } as CustomRequestConfig).catch(error => {
+        console.log(error);
       });
     }
 
     tokenService.clearToken();
-    clearCookie();
+
     if (window.location.pathname !== '/login') {
       window.location.href = '/login';
     }
   };
 
-  /**
-   * Sets authentication cookie
-   * @param token - JWT token string
-   */
-  const setCookie = (token: string): void => {
-    document.cookie = `token=${token}; path=/; max-age=${60 * 15}`;
-  };
-
-  /**
-   * Clears authentication cookie
-   */
-  const clearCookie = (): void => {
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-  };
-
-  // Initialize interceptors
-  setupRefreshInterceptor();
-
   return {
+    axiosInstance,
+    request,
     login,
     logout,
     refreshToken,
   };
 };
 
-export const authService = createAuthService();
+// Create single instance of auth service
+const authServiceInstance = createAuthService();
+export const authService = authServiceInstance;
+export const { axiosInstance, request } = authServiceInstance;
 export { ApiError as AuthError };
