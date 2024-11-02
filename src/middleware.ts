@@ -63,7 +63,12 @@ const hasAccess = (role: UserRole, pathname: string): boolean => {
  * - Manages redirects for unauthorized access
  */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, protocol, host } = request.nextUrl;
+
+  // Force HTTPS on Railway
+  if (process.env.NODE_ENV === 'production' && protocol === 'http' && host.includes('railway.app')) {
+    return NextResponse.redirect(`https://${host}${pathname}`, { status: 301 });
+  }
 
   // Get refresh_token from cookies for server-side auth
   const refreshToken = request.cookies.get('refresh_token')?.value;
@@ -114,5 +119,8 @@ export async function middleware(request: NextRequest) {
  * Include root path in matcher
  */
 export const config = {
-  matcher: ['/', '/login', '/admin/:path*', '/cashier/:path*'],
+  matcher: [
+    // Match all paths except static assets and API routes
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };

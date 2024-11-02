@@ -27,6 +27,9 @@ const createAuthService = () => {
   }> = [];
   let onTokenRefreshed: ((token: string) => void) | null = null;
 
+  // Konfigurasi default untuk axios
+  axiosInstance.defaults.withCredentials = true;
+
   // Fungsi untuk set callback saat token di-refresh
   const setOnTokenRefreshed = (callback: (token: string) => void) => {
     onTokenRefreshed = callback;
@@ -143,19 +146,21 @@ const createAuthService = () => {
   const logout = async (): Promise<void> => {
     const token = tokenService.getToken();
 
-    if (token) {
-      try {
-        await request({
-          method: 'DELETE',
-          url: 'api/users/logout',
-          skipRefreshToken: true,
-        } as CustomRequestConfig);
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
+    try {
+      // Kirim request logout ke server untuk menghapus refresh token
+      await request({
+        method: 'DELETE',
+        url: 'api/users/logout',
+        skipRefreshToken: true,
+        withCredentials: true, // Pastikan cookies dikirim
+      } as CustomRequestConfig);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error; // Throw error agar dapat ditangkap di AuthContext
+    } finally {
+      // Selalu clear token lokal
+      tokenService.clearToken();
     }
-
-    tokenService.clearToken();
   };
 
   return {

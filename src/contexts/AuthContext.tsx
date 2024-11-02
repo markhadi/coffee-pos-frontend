@@ -102,11 +102,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setAccessToken(null);
-    setUser(null);
-    tokenService.clearToken();
-    router.push('/login');
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setAccessToken(null);
+      setUser(null);
+      tokenService.clearToken();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setAccessToken(null);
+      setUser(null);
+      tokenService.clearToken();
+      router.push('/login');
+    }
   };
 
   const value = {

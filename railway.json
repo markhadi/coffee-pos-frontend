@@ -1,0 +1,12 @@
+{
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://coffee-pos-backend.up.railway.app/"
+    }
+  },
+  "deploy": {
+    "startCommand": "next start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
