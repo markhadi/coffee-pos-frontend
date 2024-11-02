@@ -5,13 +5,32 @@ import { createColumnHelper } from '@/hooks/useVirtualTable';
 import { VirtualTable } from '@/components/ui/virtual-table';
 import { ActionButtons } from '@/components/ui/action-button';
 
+/**
+ * Column helper for type-safe table column definitions
+ */
 const columnHelper = createColumnHelper<ProductWithCategory>();
 
+/**
+ * Custom metadata for table actions
+ * @interface TableCustomMeta
+ * @property {(product: ProductWithCategory) => void} onEdit - Function to handle product edit
+ * @property {(product: ProductWithCategory) => void} onDelete - Function to handle product deletion
+ */
 interface TableCustomMeta {
   onEdit: (product: ProductWithCategory) => void;
   onDelete: (product: ProductWithCategory) => void;
 }
 
+/**
+ * Props for ProductTable component
+ * @interface ProductTableProps
+ * @property {ProductWithCategory[]} data - Array of product data to display
+ * @property {(product: ProductWithCategory) => void} onEdit - Function to handle product edit
+ * @property {(product: ProductWithCategory) => void} onDelete - Function to handle product deletion
+ * @property {() => void} fetchNextPage - Function to fetch next page of data
+ * @property {boolean} isFetching - Loading state indicator
+ * @property {boolean} hasNextPage - Indicates if more data is available
+ */
 interface ProductTableProps {
   data: ProductWithCategory[];
   onEdit: (product: ProductWithCategory) => void;
@@ -21,6 +40,11 @@ interface ProductTableProps {
   hasNextPage: boolean;
 }
 
+/**
+ * Creates table columns configuration with actions
+ * @param {TableCustomMeta} meta - Object containing edit and delete handlers
+ * @returns {Array} Array of column definitions
+ */
 const createTableColumns = (meta: TableCustomMeta) => [
   columnHelper.display({
     id: 'index',
@@ -92,7 +116,25 @@ const createTableColumns = (meta: TableCustomMeta) => [
   }),
 ];
 
+/**
+ * Product table component with virtualization and infinite scroll
+ * Displays products in a paginated table with edit and delete actions
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <ProductTable
+ *   data={products}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ *   fetchNextPage={fetchNextPage}
+ *   isFetching={isFetching}
+ *   hasNextPage={hasNextPage}
+ * />
+ * ```
+ */
 export function ProductTable({ data = [], onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: ProductTableProps) {
+  // Memoize columns to prevent unnecessary re-renders
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
   return (

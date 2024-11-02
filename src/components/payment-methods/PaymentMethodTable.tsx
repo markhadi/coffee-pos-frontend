@@ -5,13 +5,32 @@ import { createColumnHelper } from '@/hooks/useVirtualTable';
 import { VirtualTable } from '@/components/ui/virtual-table';
 import { ActionButtons } from '@/components/ui/action-button';
 
+/**
+ * Column helper for type-safe table column definitions
+ */
 const columnHelper = createColumnHelper<PaymentMethod>();
 
+/**
+ * Custom metadata for table actions
+ * @interface TableCustomMeta
+ * @property {(paymentMethod: PaymentMethod) => void} onEdit - Function to handle payment method edit
+ * @property {(paymentMethod: PaymentMethod) => void} onDelete - Function to handle payment method deletion
+ */
 interface TableCustomMeta {
   onEdit: (paymentMethod: PaymentMethod) => void;
   onDelete: (paymentMethod: PaymentMethod) => void;
 }
 
+/**
+ * Props for PaymentMethodTable component
+ * @interface PaymentMethodTableProps
+ * @property {PaymentMethod[]} data - Array of payment method data to display
+ * @property {(paymentMethod: PaymentMethod) => void} onEdit - Function to handle payment method edit
+ * @property {(paymentMethod: PaymentMethod) => void} onDelete - Function to handle payment method deletion
+ * @property {() => void} fetchNextPage - Function to fetch next page of data
+ * @property {boolean} isFetching - Loading state indicator
+ * @property {boolean} hasNextPage - Indicates if more data is available
+ */
 interface PaymentMethodTableProps {
   data: PaymentMethod[];
   onEdit: (paymentMethod: PaymentMethod) => void;
@@ -21,6 +40,11 @@ interface PaymentMethodTableProps {
   hasNextPage: boolean;
 }
 
+/**
+ * Creates table columns configuration with actions
+ * @param {TableCustomMeta} meta - Object containing edit and delete handlers
+ * @returns {Array} Array of column definitions
+ */
 const createTableColumns = (meta: TableCustomMeta) => [
   columnHelper.display({
     id: 'index',
@@ -82,7 +106,25 @@ const createTableColumns = (meta: TableCustomMeta) => [
   }),
 ];
 
+/**
+ * Payment method table component with virtualization and infinite scroll
+ * Displays payment methods in a paginated table with edit and delete actions
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <PaymentMethodTable
+ *   data={paymentMethods}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ *   fetchNextPage={fetchNextPage}
+ *   isFetching={isFetching}
+ *   hasNextPage={hasNextPage}
+ * />
+ * ```
+ */
 export function PaymentMethodTable({ data = [], onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: PaymentMethodTableProps) {
+  // Memoize columns to prevent unnecessary re-renders
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
   return (

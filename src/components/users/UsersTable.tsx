@@ -5,13 +5,32 @@ import { createColumnHelper } from '@/hooks/useVirtualTable';
 import { VirtualTable } from '@/components/ui/virtual-table';
 import { ActionButtons } from '@/components/ui/action-button';
 
+/**
+ * Column helper for type-safe table column definitions
+ */
 const columnHelper = createColumnHelper<UserResponse>();
 
+/**
+ * Custom metadata for table actions
+ * @interface TableCustomMeta
+ * @property {(user: UserResponse) => void} onEdit - Function to handle user edit
+ * @property {(user: UserResponse) => void} onDelete - Function to handle user deletion
+ */
 interface TableCustomMeta {
   onEdit: (user: UserResponse) => void;
   onDelete: (user: UserResponse) => void;
 }
 
+/**
+ * Props for UsersTable component
+ * @interface UsersTableProps
+ * @property {UserResponse[]} data - Array of user data to display
+ * @property {(user: UserResponse) => void} onEdit - Function to handle user edit
+ * @property {(user: UserResponse) => void} onDelete - Function to handle user deletion
+ * @property {() => void} fetchNextPage - Function to fetch next page of data
+ * @property {boolean} isFetching - Loading state indicator
+ * @property {boolean} hasNextPage - Indicates if more data is available
+ */
 interface UsersTableProps {
   data: UserResponse[];
   onEdit: (user: UserResponse) => void;
@@ -21,6 +40,11 @@ interface UsersTableProps {
   hasNextPage: boolean;
 }
 
+/**
+ * Creates table columns configuration with actions
+ * @param {TableCustomMeta} meta - Object containing edit and delete handlers
+ * @returns {Array} Array of column definitions
+ */
 const createTableColumns = (meta: TableCustomMeta) => [
   columnHelper.display({
     id: 'index',
@@ -64,7 +88,25 @@ const createTableColumns = (meta: TableCustomMeta) => [
   }),
 ];
 
+/**
+ * Users table component with virtualization and infinite scroll
+ * Displays users in a paginated table with edit and delete actions
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UsersTable
+ *   data={users}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ *   fetchNextPage={fetchNextPage}
+ *   isFetching={isFetching}
+ *   hasNextPage={hasNextPage}
+ * />
+ * ```
+ */
 export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: UsersTableProps) {
+  // Memoize columns to prevent unnecessary re-renders
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
   return (

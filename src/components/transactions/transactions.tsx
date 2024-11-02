@@ -112,7 +112,7 @@ export default function TransactionsPage() {
       <div className="flex flex-col gap-10 xl:flex-row">
         {/* Products Section */}
         <div className="flex-grow">
-          <h1 className="text-[32px] text-neutral-900 font-bold mb-8">Transactions</h1>
+          <h1 className="mb-8">Transactions</h1>
           <SearchBar
             searchTerm={searchTerm}
             onSearch={setSearchTerm}
