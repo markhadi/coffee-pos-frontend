@@ -102,18 +102,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const clearAuthState = () => {
+    setAccessToken(null);
+    setUser(null);
+    setError('');
+    tokenService.clearToken();
+  };
+
   const logout = async () => {
+    setIsLoading(true);
     try {
       await authService.logout();
-      setAccessToken(null);
-      setUser(null);
-      tokenService.clearToken();
-      router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      setAccessToken(null);
-      setUser(null);
-      tokenService.clearToken();
+    } finally {
+      clearAuthState();
+      setIsLoading(false);
       router.push('/login');
     }
   };
