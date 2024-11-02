@@ -1,10 +1,10 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
-import { useRef, useMemo, useCallback, useEffect } from 'react';
+import { useVirtualTable, createColumnHelper } from '@/hooks/useVirtualTable';
+import { useMemo } from 'react';
 import { PaymentMethod } from '@/types/payment-method';
 import { formatDate } from '@/lib/utils';
 import { ActionButtons } from '@/components/ui/action-button';
 import { useTableScroll } from '@/hooks/useTableScroll';
+import { flexRender } from '@tanstack/react-table';
 
 /**
  * Column helper for type-safe table column definitions
@@ -108,23 +108,12 @@ export function PaymentMethodTable({ data = [], onEdit, onDelete, fetchNextPage,
 
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
-  const table = useReactTable({
+  const { table, virtualRows, rowVirtualizer } = useVirtualTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    containerRef: tableContainerRef,
     meta: { onEdit, onDelete } as TableCustomMeta,
   });
-
-  const { rows } = table.getRowModel();
-
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 48,
-    overscan: 5,
-  });
-
-  const virtualRows = rowVirtualizer.getVirtualItems();
 
   // Show empty state if no data
   if (!data.length) {
@@ -165,7 +154,7 @@ export function PaymentMethodTable({ data = [], onEdit, onDelete, fetchNextPage,
           style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {virtualRows.map(virtualRow => {
-            const row = rows[virtualRow.index];
+            const row = table.getRowModel().rows[virtualRow.index];
             return (
               <tr
                 key={row.id}

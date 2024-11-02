@@ -1,9 +1,9 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
-import { useRef, useMemo, useCallback, useEffect } from 'react';
+import { useMemo } from 'react';
 import { CategoryResponse } from '@/types/category';
 import { ActionButtons } from '@/components/ui/action-button';
 import { useTableScroll } from '@/hooks/useTableScroll';
+import { useVirtualTable, createColumnHelper } from '@/hooks/useVirtualTable';
+import { flexRender } from '@tanstack/react-table';
 
 const columnHelper = createColumnHelper<CategoryResponse>();
 
@@ -64,23 +64,12 @@ export function CategoriesTable({ data = [], onEdit, onDelete, fetchNextPage, is
 
   const columns = useMemo(() => createTableColumns({ onEdit, onDelete }), [onEdit, onDelete]);
 
-  const table = useReactTable({
+  const { table, virtualRows, rowVirtualizer } = useVirtualTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    containerRef: tableContainerRef,
     meta: { onEdit, onDelete } as TableCustomMeta,
   });
-
-  const { rows } = table.getRowModel();
-
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 48,
-    overscan: 5,
-  });
-
-  const virtualRows = rowVirtualizer.getVirtualItems();
 
   // Show empty state if no data
   if (!data.length) {
@@ -121,7 +110,7 @@ export function CategoriesTable({ data = [], onEdit, onDelete, fetchNextPage, is
           style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
           {virtualRows.map(virtualRow => {
-            const row = rows[virtualRow.index];
+            const row = table.getRowModel().rows[virtualRow.index];
             return (
               <tr
                 key={row.id}
