@@ -9,29 +9,29 @@ import { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
  * Extends the default axios config with custom properties
  */
 interface CustomRequestConfig extends InternalAxiosRequestConfig {
-  skipRefreshToken?: boolean; // Flag to skip token refresh for certain requests
-  _retry?: boolean; // Flag to prevent infinite retry loops
+  skipRefreshToken?: boolean;
+  _retry?: boolean;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:2000/';
 
 /**
  * Creates an authentication service with token refresh capabilities
- * Handles login, logout, and automatic token refresh
  */
 const createAuthService = () => {
   const { axiosInstance, request } = createHttpClient(API_URL);
-  let isRefreshing = false; // Flag to prevent multiple simultaneous refresh requests
+  let isRefreshing = false;
   let failedQueue: Array<{
     resolve: (token: string) => void;
     reject: (error: any) => void;
   }> = [];
+  let onTokenRefreshed: ((token: string) => void) | null = null;
 
-  /**
-   * Process queued requests after token refresh
-   * @param error - Error from token refresh attempt
-   * @param token - New token if refresh was successful
-   */
+  // Fungsi untuk set callback saat token di-refresh
+  const setOnTokenRefreshed = (callback: (token: string) => void) => {
+    onTokenRefreshed = callback;
+  };
+
   const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach(promise => {
       if (error) {
@@ -43,23 +43,29 @@ const createAuthService = () => {
     failedQueue = [];
   };
 
-  /**
-   * Response interceptor to handle 401 errors and token refresh
-   * Automatically refreshes token and retries failed requests
-   */
+  axiosInstance.interceptors.request.use(
+    config => {
+      const token = tokenService.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => {
+      return Promise.reject(error);
+    }
+  );
+
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => response,
     async error => {
       const originalRequest = error.config as CustomRequestConfig;
 
-      // Skip refresh for login/refresh requests
       if (originalRequest.skipRefreshToken || originalRequest.url?.includes('refresh')) {
         return Promise.reject(error);
       }
 
-      // Handle 401 errors with token refresh
       if (error.response?.status === 401 && !originalRequest._retry) {
-        // Queue request if refresh is already in progress
         if (isRefreshing) {
           try {
             const token = await new Promise<string>((resolve, reject) => {
@@ -77,13 +83,18 @@ const createAuthService = () => {
 
         try {
           const newToken = await refreshToken();
-
+          tokenService.setToken(newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+          // Panggil callback untuk update state user
+          if (onTokenRefreshed) {
+            onTokenRefreshed(newToken);
+          }
+
           processQueue(null, newToken);
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           processQueue(refreshError, null);
-
           await logout();
           throw refreshError;
         } finally {
@@ -94,30 +105,24 @@ const createAuthService = () => {
     }
   );
 
-  /**
-   * Authenticates user with credentials
-   * @param credentials - User login credentials
-   * @returns Promise resolving to login response
-   */
   const login = async (credentials: LoginSchema): Promise<LoginResponse> => {
-    const response = await request<LoginResponse>({
-      method: 'POST',
-      url: 'api/users/login',
-      data: credentials,
-      skipRefreshToken: true,
-    } as CustomRequestConfig);
+    try {
+      const response = await request<LoginResponse>({
+        method: 'POST',
+        url: 'api/users/login',
+        data: credentials,
+        skipRefreshToken: true,
+      } as CustomRequestConfig);
 
-    if (response.data) {
-      tokenService.setToken(response.data);
+      return response;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new Error('An error occurred during login');
     }
-
-    return response;
   };
 
-  /**
-   * Refreshes access token using refresh token from cookie
-   * @returns Promise resolving to new access token
-   */
   const refreshToken = async (): Promise<string> => {
     try {
       const response = await request<LoginResponse>({
@@ -127,37 +132,30 @@ const createAuthService = () => {
       } as CustomRequestConfig);
 
       if (response.data) {
-        tokenService.setToken(response.data);
         return response.data;
       }
-
       throw new Error('Invalid refresh token response');
     } catch (error) {
       throw error;
     }
   };
 
-  /**
-   * Logs out user and cleans up authentication state
-   */
   const logout = async (): Promise<void> => {
     const token = tokenService.getToken();
 
     if (token) {
-      await request({
-        method: 'DELETE',
-        url: 'api/users/logout',
-        skipRefreshToken: true,
-      } as CustomRequestConfig).catch(error => {
-        console.log(error);
-      });
+      try {
+        await request({
+          method: 'DELETE',
+          url: 'api/users/logout',
+          skipRefreshToken: true,
+        } as CustomRequestConfig);
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
     }
 
     tokenService.clearToken();
-
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
   };
 
   return {
@@ -166,10 +164,10 @@ const createAuthService = () => {
     login,
     logout,
     refreshToken,
+    setOnTokenRefreshed,
   };
 };
 
-// Create single instance of auth service
 const authServiceInstance = createAuthService();
 export const authService = authServiceInstance;
 export const { axiosInstance, request } = authServiceInstance;

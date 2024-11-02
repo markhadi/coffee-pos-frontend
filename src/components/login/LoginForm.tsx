@@ -1,30 +1,19 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Coffee, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '../ui/alert';
 import { loginSchema, LoginSchema } from '@/types/auth';
-import { useAuth } from '@/hooks/useAuth';
-import LoadingOverlay from '../LoadingOverlay';
+import { useAuth } from '@/contexts/AuthContext';
 
-/**
- * Constants for configuration
- */
 const CONFIG = {
-  TIMEOUTS: {
-    LOGIN: 15000,
-    SLOW_CONNECTION: 3000,
-  },
   MESSAGES: {
-    SLOW_CONNECTION: 'Slow connection detected. Please wait...',
     LOGGING_IN: 'Logging in...',
-    LOGIN_TIMEOUT: 'Login timeout. Please check your connection and try again.',
   },
   FORM_FIELDS: [
     {
@@ -44,9 +33,6 @@ const CONFIG = {
   ],
 } as const;
 
-/**
- * Common styles
- */
 const STYLES = {
   input: 'px-4 py-2 text-[16px] rounded-md bg-neutral-50',
   label: 'text-neutral-900 text-[16px]',
@@ -54,9 +40,6 @@ const STYLES = {
   form: 'w-full max-w-sm space-y-6 bg-indigo-50 rounded-xl p-10 shadow-md relative',
 } as const;
 
-/**
- * FormField component to reduce repetition in form fields
- */
 const FormFieldComponent = ({ field, isLoading }: { field: (typeof CONFIG.FORM_FIELDS)[number]; isLoading: boolean }) => (
   <FormField
     name={field.name}
@@ -79,21 +62,8 @@ const FormFieldComponent = ({ field, isLoading }: { field: (typeof CONFIG.FORM_F
   />
 );
 
-/**
- * LoginForm Component
- * Handles user authentication with timeout and slow connection detection
- */
 export default function LoginForm() {
-  const { login, isLoading, error } = useAuth();
-  const [isSlowConnection, setIsSlowConnection] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading) {
-      setIsSlowConnection(false);
-      setShowOverlay(false);
-    }
-  }, [isLoading]);
+  const { login, isLoading, error: authError } = useAuth();
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -103,28 +73,12 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit: SubmitHandler<LoginSchema> = async data => {
-    let timeoutId: NodeJS.Timeout | undefined;
-    let slowConnectionTimer: NodeJS.Timeout | undefined;
-
+  const onSubmit = async (credentials: LoginSchema) => {
     try {
-      slowConnectionTimer = setTimeout(() => {
-        setIsSlowConnection(true);
-        setShowOverlay(true);
-      }, CONFIG.TIMEOUTS.SLOW_CONNECTION);
-
-      const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error(CONFIG.MESSAGES.LOGIN_TIMEOUT));
-        }, CONFIG.TIMEOUTS.LOGIN);
-      });
-
-      await Promise.race([login(data), timeoutPromise]);
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-      if (slowConnectionTimer) clearTimeout(slowConnectionTimer);
+      await login(credentials);
+    } catch (err) {
+      console.error('Login error:', err);
+      form.setValue('password', '');
     }
   };
 
@@ -133,24 +87,6 @@ export default function LoginForm() {
       event.preventDefault();
       form.handleSubmit(onSubmit)();
     }
-  };
-
-  const renderAlert = () => {
-    if (error) {
-      return (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      );
-    }
-    if (isSlowConnection) {
-      return (
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <AlertDescription className="text-yellow-800">{CONFIG.MESSAGES.SLOW_CONNECTION}</AlertDescription>
-        </Alert>
-      );
-    }
-    return null;
   };
 
   return (
@@ -165,7 +101,11 @@ export default function LoginForm() {
           <h2 className="text-2xl text-indigo-600 font-bold">Login</h2>
         </div>
 
-        {renderAlert()}
+        {authError && (
+          <Alert variant="destructive">
+            <AlertDescription>{authError}</AlertDescription>
+          </Alert>
+        )}
 
         {CONFIG.FORM_FIELDS.map(field => (
           <FormFieldComponent
@@ -190,8 +130,6 @@ export default function LoginForm() {
           )}
         </Button>
       </form>
-
-      {showOverlay && <LoadingOverlay message={isSlowConnection ? CONFIG.MESSAGES.SLOW_CONNECTION : CONFIG.MESSAGES.LOGGING_IN} />}
     </Form>
   );
 }
