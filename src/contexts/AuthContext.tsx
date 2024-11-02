@@ -15,11 +15,6 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const ROLE_ROUTES = {
-  [UserRole.ADMIN]: '/admin',
-  [UserRole.CASHIER]: '/cashier',
-} as const;
-
 const AuthContext = createContext<AuthContextType>({
   accessToken: null,
   user: null,
