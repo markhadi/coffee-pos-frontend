@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
-import { SearchBar } from '@/components/SearchBar';
 import { ProductTable } from '@/components/products/ProductTable';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
@@ -11,7 +10,7 @@ import { useCategories } from '@/hooks/useCategory';
 import { ProductWithCategory, CreateProductPayload, UpdateProductPayload } from '@/types/product';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
-import { AddButton } from '@/components/ui/add-button';
+import { TableHeader } from '@/components/ui/table-header';
 
 /**
  * Products management page component
@@ -124,20 +123,13 @@ export default function ProductsPage() {
     <MainLayout>
       <div className="flex flex-col gap-8">
         <h1>Products</h1>
-
-        {/* Search and Add Product section */}
-        <div className="flex items-center justify-between gap-6">
-          <SearchBar
-            searchTerm={search}
-            onSearch={setSearch}
-            placeholder="Search products"
-            className="w-full !mb-0"
-          />
-          <AddButton
-            onClick={handleCreate}
-            label="Add New Product"
-          />
-        </div>
+        <TableHeader
+          searchTerm={search}
+          onSearch={setSearch}
+          placeholder="Search products"
+          onAdd={handleCreate}
+          addButtonLabel="Add New Product"
+        />
 
         {/* Products Table with infinite scroll */}
         <ProductTable

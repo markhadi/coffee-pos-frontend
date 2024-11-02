@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
-import { SearchBar } from '@/components/SearchBar';
 import CategoryFormDialog from '@/components/categories/CategoryFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { useCategories } from '@/hooks/useCategory';
@@ -10,7 +9,7 @@ import { CategoryResponse } from '@/types/category';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CategoriesTable } from '@/components/categories/CategoriesTable';
-import { AddButton } from '@/components/ui/add-button';
+import { TableHeader } from '@/components/ui/table-header';
 
 /**
  * Categories management page component
@@ -114,20 +113,13 @@ export default function CategoriesPage() {
     <MainLayout>
       <div className="flex flex-col gap-8">
         <h1>Categories</h1>
-
-        {/* Search and Add Category section */}
-        <div className="flex items-center justify-between gap-6">
-          <SearchBar
-            searchTerm={search}
-            onSearch={setSearch}
-            placeholder="Search categories"
-            className="w-full !mb-0"
-          />
-          <AddButton
-            onClick={handleCreate}
-            label="Add New Category"
-          />
-        </div>
+        <TableHeader
+          searchTerm={search}
+          onSearch={setSearch}
+          placeholder="Search categories"
+          onAdd={handleCreate}
+          addButtonLabel="Add New Category"
+        />
 
         {/* Categories Table with infinite scroll */}
         <CategoriesTable

@@ -2,15 +2,14 @@
 
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import MainLayout from '@/components/MainLayout';
-import { SearchBar } from '@/components/SearchBar';
 import { UserFormDialog } from '@/components/users/UserFormDialog';
 import { UsersTable } from '@/components/users/UsersTable';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useUsers } from '@/hooks/useUser';
 import { CreateUserPayload, UpdateUserPayload, UserResponse } from '@/types/user';
-import { AddButton } from '@/components/ui/add-button';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { TableHeader } from '@/components/ui/table-header';
 
 /**
  * Users management page component
@@ -117,20 +116,13 @@ const page = () => {
     <MainLayout>
       <div className="flex flex-col gap-8">
         <h1>Users</h1>
-
-        {/* Search and Add User section */}
-        <div className="flex items-center justify-between gap-6">
-          <SearchBar
-            searchTerm={search}
-            onSearch={setSearch}
-            placeholder="Search users"
-            className="w-full !mb-0"
-          />
-          <AddButton
-            onClick={handleCreate}
-            label="Add New User"
-          />
-        </div>
+        <TableHeader
+          searchTerm={search}
+          onSearch={setSearch}
+          placeholder="Search users"
+          onAdd={handleCreate}
+          addButtonLabel="Add New User"
+        />
 
         {/* Users Table with infinite scroll */}
         <UsersTable
