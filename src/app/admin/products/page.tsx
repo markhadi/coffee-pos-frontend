@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { SearchBar } from '@/components/SearchBar';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ProductTable } from '@/components/products/ProductTable';
 import ProductFormDialog from '@/components/products/ProductFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
@@ -13,6 +11,7 @@ import { useCategories } from '@/hooks/useCategory';
 import { ProductWithCategory, CreateProductPayload, UpdateProductPayload } from '@/types/product';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
+import { AddButton } from '@/components/ui/add-button';
 
 /**
  * Products management page component
@@ -134,13 +133,10 @@ export default function ProductsPage() {
             placeholder="Search products"
             className="w-full !mb-0"
           />
-          <Button
+          <AddButton
             onClick={handleCreate}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Product
-          </Button>
+            label="Add New Product"
+          />
         </div>
 
         {/* Products Table with infinite scroll */}

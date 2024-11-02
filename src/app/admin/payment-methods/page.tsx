@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { SearchBar } from '@/components/SearchBar';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AddButton } from '@/components/ui/add-button';
 import { PaymentMethodTable } from '@/components/payment-methods/PaymentMethodTable';
 import PaymentMethodFormDialog from '@/components/payment-methods/PaymentMethodFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
@@ -130,16 +129,10 @@ export default function PaymentMethodsPage() {
             placeholder="Search payment methods"
             className="w-full !mb-0"
           />
-          <Button
+          <AddButton
             onClick={handleCreate}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus
-              strokeWidth={4}
-              className="w-4 h-4 text-white md:mr-2"
-            />
-            <span className="hidden md:block">Add New Payment Method</span>
-          </Button>
+            label="Add New Payment Method"
+          />
         </div>
 
         {/* Payment Methods Table with infinite scroll */}

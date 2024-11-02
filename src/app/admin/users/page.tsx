@@ -8,7 +8,7 @@ import { UsersTable } from '@/components/users/UsersTable';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useUsers } from '@/hooks/useUser';
 import { CreateUserPayload, UpdateUserPayload, UserResponse } from '@/types/user';
-import { Plus } from 'lucide-react';
+import { AddButton } from '@/components/ui/add-button';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -126,17 +126,10 @@ const page = () => {
             placeholder="Search users"
             className="w-full !mb-0"
           />
-
-          <button
+          <AddButton
             onClick={handleCreate}
-            className="text-[16px] w-max h-max flex items-center gap-1 px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
-          >
-            <Plus
-              size={24}
-              strokeWidth={4}
-            />
-            <span className="hidden md:block md:w-max">Add New User</span>
-          </button>
+            label="Add New User"
+          />
         </div>
 
         {/* Users Table with infinite scroll */}

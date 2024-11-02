@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { SearchBar } from '@/components/SearchBar';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import CategoryFormDialog from '@/components/categories/CategoryFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { useCategories } from '@/hooks/useCategory';
@@ -12,6 +10,7 @@ import { CategoryResponse } from '@/types/category';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CategoriesTable } from '@/components/categories/CategoriesTable';
+import { AddButton } from '@/components/ui/add-button';
 
 /**
  * Categories management page component
@@ -124,16 +123,10 @@ export default function CategoriesPage() {
             placeholder="Search categories"
             className="w-full !mb-0"
           />
-          <Button
+          <AddButton
             onClick={handleCreate}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus
-              strokeWidth={4}
-              className="w-4 h-4 text-white md:mr-2"
-            />
-            <span className="hidden md:block">Add New Category</span>
-          </Button>
+            label="Add New Category"
+          />
         </div>
 
         {/* Categories Table with infinite scroll */}
