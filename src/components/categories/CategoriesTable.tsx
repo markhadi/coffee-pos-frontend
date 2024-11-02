@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '@tanstack/react-table';
 import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { CategoryResponse } from '@/types/category';
+import { ActionButtons } from '@/components/ui/action-button';
 
 const columnHelper = createColumnHelper<CategoryResponse>();
 
@@ -18,26 +19,6 @@ interface CategoriesTableProps {
   isFetching: boolean;
   hasNextPage: boolean;
 }
-
-/**
- * Action buttons component for edit and delete operations
- */
-const ActionButtons = ({ onEdit, onDelete, category }: { onEdit: (category: CategoryResponse) => void; onDelete: (category: CategoryResponse) => void; category: CategoryResponse }) => (
-  <div className="flex gap-2">
-    <button
-      onClick={() => onEdit(category)}
-      className="rounded-md bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-    >
-      Edit
-    </button>
-    <button
-      onClick={() => onDelete(category)}
-      className="rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-600 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
-    >
-      Delete
-    </button>
-  </div>
-);
 
 /**
  * Creates table columns configuration
@@ -66,7 +47,7 @@ const createTableColumns = (meta: TableCustomMeta) => [
         <ActionButtons
           onEdit={meta.onEdit}
           onDelete={meta.onDelete}
-          category={category}
+          item={category}
         />
       );
     },

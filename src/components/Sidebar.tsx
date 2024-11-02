@@ -6,10 +6,12 @@ import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import LogoutButton from './LogoutButton';
 import { NavigationItem } from '@/types/navigation';
+import SidebarSkeleton from './skeletons/SidebarSkeleton';
 
 interface SidebarProps {
   role: string;
   navigation: NavigationItem[];
+  isLoading?: boolean;
 }
 
 /**
@@ -43,9 +45,13 @@ const NavLink: React.FC<{ item: NavigationItem; isActive: boolean; onClick?: () 
  * @param {string} props.role - User role
  * @param {NavigationItem[]} props.navigation - Navigation items to display
  */
-const Sidebar: React.FC<SidebarProps> = ({ navigation }) => {
+const Sidebar: React.FC<SidebarProps> = ({ navigation, isLoading = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  if (isLoading) {
+    return <SidebarSkeleton />;
+  }
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 

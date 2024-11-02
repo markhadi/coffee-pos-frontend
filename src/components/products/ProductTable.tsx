@@ -3,6 +3,7 @@ import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '
 import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { ProductWithCategory } from '@/types/product';
 import { formatDate, formatCurrency } from '@/lib/utils';
+import { ActionButtons } from '@/components/ui/action-button';
 
 /**
  * Column helper for type-safe table column definitions
@@ -28,26 +29,6 @@ interface ProductTableProps {
   isFetching: boolean;
   hasNextPage: boolean;
 }
-
-/**
- * Action buttons component for edit and delete operations
- */
-const ActionButtons = ({ onEdit, onDelete, product }: { onEdit: (product: ProductWithCategory) => void; onDelete: (product: ProductWithCategory) => void; product: ProductWithCategory }) => (
-  <div className="flex gap-2">
-    <button
-      onClick={() => onEdit(product)}
-      className="rounded-md bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-    >
-      Edit
-    </button>
-    <button
-      onClick={() => onDelete(product)}
-      className="rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-600 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
-    >
-      Delete
-    </button>
-  </div>
-);
 
 /**
  * Creates table columns configuration
@@ -116,7 +97,7 @@ const createTableColumns = (meta: TableCustomMeta) => [
         <ActionButtons
           onEdit={meta.onEdit}
           onDelete={meta.onDelete}
-          product={product}
+          item={product}
         />
       );
     },

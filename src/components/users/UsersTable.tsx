@@ -3,6 +3,7 @@ import { createColumnHelper, getCoreRowModel, useReactTable, flexRender } from '
 import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { UserResponse } from '@/types/user';
 import { formatDate } from '@/lib/utils';
+import { ActionButtons } from '@/components/ui/action-button';
 
 const columnHelper = createColumnHelper<UserResponse>();
 
@@ -19,66 +20,6 @@ interface UsersTableProps {
   isFetching: boolean;
   hasNextPage: boolean;
 }
-
-const ActionButtons = ({ onEdit, onDelete, user }: { onEdit: (user: UserResponse) => void; onDelete: (user: UserResponse) => void; user: UserResponse }) => (
-  <div className="flex gap-2">
-    <button
-      onClick={() => onEdit(user)}
-      className="rounded-md bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-cyan-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-    >
-      Edit
-    </button>
-    <button
-      onClick={() => onDelete(user)}
-      className="rounded-md bg-rose-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-600 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
-    >
-      Delete
-    </button>
-  </div>
-);
-
-const createTableColumns = (meta: TableCustomMeta) => [
-  columnHelper.display({
-    id: 'index',
-    header: 'No',
-    size: 70,
-    cell: props => props.row.index + 1,
-  }),
-  columnHelper.accessor('username', {
-    header: 'Username',
-    size: 150,
-  }),
-  columnHelper.accessor('name', {
-    header: 'Name',
-    size: 200,
-  }),
-  columnHelper.accessor('role', {
-    header: 'Role',
-    size: 100,
-  }),
-  columnHelper.accessor('created_at', {
-    header: 'Created At',
-    size: 200,
-    cell: info => formatDate(info.getValue()),
-  }),
-  columnHelper.accessor('updated_at', {
-    header: 'Updated At',
-    size: 200,
-    cell: info => formatDate(info.getValue()),
-  }),
-  columnHelper.display({
-    id: 'actions',
-    header: 'Actions',
-    size: 150,
-    cell: props => (
-      <ActionButtons
-        onEdit={meta.onEdit}
-        onDelete={meta.onDelete}
-        user={props.row.original}
-      />
-    ),
-  }),
-];
 
 export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, hasNextPage }: UsersTableProps) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -179,3 +120,46 @@ export function UsersTable({ data, onEdit, onDelete, fetchNextPage, isFetching, 
     </div>
   );
 }
+
+const createTableColumns = (meta: TableCustomMeta) => [
+  columnHelper.display({
+    id: 'index',
+    header: 'No',
+    size: 70,
+    cell: props => props.row.index + 1,
+  }),
+  columnHelper.accessor('username', {
+    header: 'Username',
+    size: 150,
+  }),
+  columnHelper.accessor('name', {
+    header: 'Name',
+    size: 200,
+  }),
+  columnHelper.accessor('role', {
+    header: 'Role',
+    size: 100,
+  }),
+  columnHelper.accessor('created_at', {
+    header: 'Created At',
+    size: 200,
+    cell: info => formatDate(info.getValue()),
+  }),
+  columnHelper.accessor('updated_at', {
+    header: 'Updated At',
+    size: 200,
+    cell: info => formatDate(info.getValue()),
+  }),
+  columnHelper.display({
+    id: 'actions',
+    header: 'Actions',
+    size: 150,
+    cell: props => (
+      <ActionButtons
+        onEdit={meta.onEdit}
+        onDelete={meta.onDelete}
+        item={props.row.original}
+      />
+    ),
+  }),
+];

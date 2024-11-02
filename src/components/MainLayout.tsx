@@ -19,6 +19,7 @@ import { getNavigationByRole } from '@/constants/navigation';
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
   const [role, setRole] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check authentication and set user role on component mount
   useEffect(() => {
@@ -30,22 +31,19 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
       const user = JSON.parse(userStr) as DecodedToken;
       setRole(user.role);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error parsing user data:', error);
       router.push('/login');
     }
   }, [router]);
 
-  // Show loading state while role is being determined
-  if (!role) {
-    return <Loading />;
-  }
-
   return (
     <div className="flex min-h-screen">
       <Sidebar
         role={role}
         navigation={getNavigationByRole(role)}
+        isLoading={isLoading}
       />
       <main className="w-full px-10 py-16 bg-neutral-50 overflow-auto">{children}</main>
       <Toaster
