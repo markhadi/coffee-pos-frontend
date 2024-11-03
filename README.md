@@ -102,10 +102,9 @@ The backend for this project is developed by [Joko Vivanco](https://github.com/j
 - Frontend: [Markhadi](https://github.com/markhadi)
 - Backend: [Joko Vivanco](https://github.com/jokovivanco)
 
-## Contributing
+## Demo Account
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+```bash
+admin
+password123
+```
