@@ -68,7 +68,7 @@ const createTableColumns = () => [
   columnHelper.accessor('service_charge', {
     header: 'Service Charge',
     size: 120,
-    cell: info => `${((info.getValue() ?? 0) * 100).toFixed(0)}%`,
+    cell: info => `${(info.getValue() ?? 0).toFixed(0)}%`,
   }),
   columnHelper.accessor('issued_at', {
     header: 'Date',

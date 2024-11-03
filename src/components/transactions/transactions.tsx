@@ -72,7 +72,7 @@ export default function TransactionsPage() {
       total_quantity: cart.reduce((sum, item) => sum + item.quantity, 0),
       total_amount: totals.totalAmount,
       payment_method_id: parseInt(data.payment),
-      service_charge: serviceCharge / 100,
+      service_charge: serviceCharge,
       transaction_items: cart.map(item => ({
         product_id: item.id,
         quantity: item.quantity,
