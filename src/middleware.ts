@@ -4,30 +4,25 @@ import { jwtDecode } from 'jwt-decode';
 import { DecodedToken, UserRole } from './types/auth';
 
 /**
- * Routes that require authentication
- * Any route in this array will be protected by the middleware
+ * Configuration for route protection and access control
  */
+
+// Routes that require authentication
 const protectedRoutes = ['/admin', '/cashier'];
 
-/**
- * Routes that should redirect to login
- * Root path should redirect to login if not authenticated
- */
+// Public routes that should handle redirection logic
 const publicRoutes = ['/', '/login'];
 
-/**
- * Mapping of user roles to their allowed routes
- * Defines which routes each role has access to
- */
+// Role-based route access mapping
 const roleRoutes: Record<UserRole, string[]> = {
   [UserRole.ADMIN]: ['/admin'],
   [UserRole.CASHIER]: ['/cashier'],
 };
 
 /**
- * Validates JWT token and decodes it
- * @param token - JWT token string
- * @returns Object containing validation result and decoded token
+ * Validates and decodes a JWT token
+ * @param token - JWT token to validate
+ * @returns Object containing validation status and decoded token if valid
  */
 const isTokenValid = (token: string): { isValid: boolean; decoded?: DecodedToken } => {
   try {
@@ -39,16 +34,17 @@ const isTokenValid = (token: string): { isValid: boolean; decoded?: DecodedToken
     }
 
     return { isValid: true, decoded };
-  } catch {
+  } catch (error) {
+    console.error('[Auth] Token validation error:', error);
     return { isValid: false };
   }
 };
 
 /**
- * Checks if user has access to requested route based on their role
+ * Checks if a user has access to a specific route based on their role
  * @param role - User's role
- * @param pathname - Requested route path
- * @returns boolean indicating if user has access
+ * @param pathname - Route path to check
+ * @returns boolean indicating access permission
  */
 const hasAccess = (role: UserRole, pathname: string): boolean => {
   const allowedRoutes = roleRoutes[role] || [];
@@ -56,30 +52,35 @@ const hasAccess = (role: UserRole, pathname: string): boolean => {
 };
 
 /**
- * Middleware function to handle authentication and authorization
- * - Protects specified routes
- * - Validates JWT tokens
- * - Handles role-based access control
- * - Manages redirects for unauthorized access
+ * Next.js Middleware for Authentication and Authorization
+ *
+ * Handles:
+ * 1. Route protection
+ * 2. JWT token validation
+ * 3. Role-based access control
+ * 4. Redirection logic
+ *
+ * Flow:
+ * - For public routes: Redirects authenticated users to their role-specific dashboard
+ * - For protected routes: Validates authentication and role-based access
+ * - For invalid/expired tokens: Redirects to login
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Get refresh_token from cookies for server-side auth
   const refreshToken = request.cookies.get('refresh_token')?.value;
 
-  // Handle public routes
+  // Handle public routes (/, /login)
   if (publicRoutes.includes(pathname)) {
     if (refreshToken) {
-      // Use refresh token to check authentication status
       const { isValid, decoded } = isTokenValid(refreshToken);
       if (isValid && decoded) {
+        // Redirect authenticated users to their dashboard
         const redirectUrl = roleRoutes[decoded.role][0];
-
         return NextResponse.redirect(new URL(redirectUrl, request.url));
       }
     }
 
+    // Redirect root to login
     if (pathname === '/') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -88,20 +89,21 @@ export async function middleware(request: NextRequest) {
 
   // Handle protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
+    // Redirect to login if no token exists
     if (!refreshToken) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Validate refresh token for protected routes
     const { isValid, decoded } = isTokenValid(refreshToken);
+
+    // Redirect to login if token is invalid
     if (!isValid || !decoded) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Check role-based access
+    // Redirect to user's dashboard if they don't have access to the requested route
     if (!hasAccess(decoded.role, pathname)) {
       const redirectUrl = roleRoutes[decoded.role][0];
-
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
   }
@@ -111,8 +113,8 @@ export async function middleware(request: NextRequest) {
 
 /**
  * Middleware configuration
- * Include root path in matcher
+ * Matches all paths except static assets and API routes
  */
 export const config = {
-  matcher: ['/', '/login', '/admin/:path*', '/cashier/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

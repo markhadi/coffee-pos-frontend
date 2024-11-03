@@ -24,12 +24,16 @@ interface ActionButtonProps {
  * ```
  */
 export function ActionButton({ onClick, variant = 'cyan', children }: ActionButtonProps) {
+  const variantClasses = {
+    cyan: 'bg-cyan-500 hover:bg-cyan-600 focus:ring-indigo-400',
+    rose: 'bg-rose-500 hover:bg-rose-600 focus:ring-rose-400',
+  };
   return (
     <button
       onClick={onClick}
-      className={`rounded-md bg-${variant}-500 px-3 py-1.5 text-sm font-medium text-white 
-        hover:bg-${variant}-600 transition-colors focus:outline-none focus:ring-2 
-        focus:ring-${variant === 'cyan' ? 'indigo' : variant}-400 focus:ring-offset-2`}
+      className={`rounded-md px-3 py-1.5 text-sm font-medium text-white 
+        transition-colors focus:outline-none focus:ring-2 
+        focus:ring-offset-2 ${variantClasses[variant as keyof typeof variantClasses]}`}
     >
       {children}
     </button>
